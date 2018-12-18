@@ -83,9 +83,9 @@ def duration start_string, compare_to_now=true
   str = "%02i:%02i" % [m, s]
 end
 
-def avatar url, size=16
+def avatar username, size=16
   @avatars ||= {}
-  @avatars[url+size.to_s] ||= `curl -s "#{url}&size=#{size}" | base64`
+  @avatars[username+size.to_s] ||= `curl -sL "https://github.com/#{username}.png?size=#{size}" | base64`
 end
 
 master_builds = CircleCi::Project.new(ENV['CIRCLE_STATUS_USER'], ENV['CIRCLE_STATUS_REPO']).recent_builds_branch('master', limit: 15).body
@@ -100,7 +100,7 @@ puts "#{ENV['CIRCLE_STATUS_USER']}/#{ENV['CIRCLE_STATUS_REPO']}|href=https://cir
 puts '---'
 
 recent_builds.each do |build|
-  puts "#{build['build_num']} (#{build['branch'][0..10]}): #{build['subject']}|href=#{build['build_url']} color=#{status_color build['status']} length=40 image=#{avatar build['user']['avatar_url']}"
+  puts "#{build['build_num']} (#{build['branch'][0..10]}): #{build['subject']}|href=#{build['build_url']} color=#{status_color build['status']} length=40 image=#{avatar build['user']['login']}"
   puts "-- #{build['build_num']}: #{build['subject']}|href=#{build['build_url']} color=#{status_color build['status']}"
   puts "-- Copy Build URL|bash=#{$0} param1=copy param2=#{build['build_url']} terminal=false"
   puts "-----"
@@ -109,7 +109,7 @@ recent_builds.each do |build|
     puts "-- Cancel|bash=#{$0} param1=cancel param2=#{build['username']} param3=#{build['reponame']} param4=#{build['build_num']} terminal=false"
   end
   puts "-----"
-  puts "--#{build['user']['login']}|href=https://github.com/#{build['user']['login']} image=#{avatar build['user']['avatar_url'], 64}"
+  puts "--#{build['user']['login']}|href=https://github.com/#{build['user']['login']} image=#{avatar build['user']['login'], 64}"
   puts "--#{build['branch']}|href=https://github.com/#{build['username']}/#{build['reponame']}/tree/#{build['branch']}"
   puts "--Compare #{build['vcs_revision'][0..8]}|href=#{build['compare']}"
   puts "--Queued: #{parse_time build['queued_at']}" if build['queued_at']
